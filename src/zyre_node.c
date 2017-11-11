@@ -1106,11 +1106,18 @@ zyre_node_recv_beacon (zyre_node_t *self)
             zmq_z85_encode(public_key, beacon.public_key, 32);
             zyre_node_require_peer(self, uuid, endpoint, public_key);
         }
-        else
-            zyre_node_require_peer(self, uuid, endpoint, NULL);
+        else {
+            zyre_peer_t * peer = zyre_node_require_peer (self, uuid, endpoint, NULL);
+            if (peer)
+                zyre_peer_refresh (peer, self->evasive_timeout,
+                        self->expired_timeout);
+        }
 
 #else
-        zyre_node_require_peer (self, uuid, endpoint);
+        zyre_peer_t * peer = zyre_node_require_peer (self, uuid, endpoint);
+        if (peer)
+            zyre_peer_refresh (peer, self->evasive_timeout,
+                    self->expired_timeout);
 #endif
     }
     else {
